@@ -82,6 +82,17 @@ textarea{min-height:64px;resize:vertical}
 .op[aria-pressed="true"] small{color:var(--oro-2)}
 select{width:100%;border:1.5px solid var(--linea);border-radius:12px;padding:12px;background:var(--crema);font:inherit;font-size:1rem;color:var(--tinta)}
 .zinfo{margin-top:8px;font-size:.88rem;background:#fff4dc;color:#7a5200;border-radius:12px;padding:10px 12px}
+.grupo small{font-family:var(--texto);font-weight:500;font-size:.75rem;color:var(--oro);margin-left:6px}
+.carrusel{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:4px 16px 10px;scrollbar-width:none}
+.carrusel::-webkit-scrollbar{display:none}
+.tarjeta{flex:0 0 46%;max-width:180px;scroll-snap-align:start;background:var(--crema);border:1.5px solid var(--linea);border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:3px;transition:border-color .15s}
+.tarjeta.on{border-color:var(--oro);background:#fff8e6}
+.tarjeta img,.tarjeta .ph{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:11px;background:#efe6d4;display:grid;place-items:center;font-size:2rem;margin-bottom:4px}
+.tarjeta b{font-size:.92rem;line-height:1.2}
+.tarjeta em{font-style:normal;font-size:.75rem;color:var(--gris)}
+.tarjeta .pr{font-weight:600;font-size:.88rem;margin-top:auto}
+.tarjeta .cant{justify-content:space-between;margin-top:6px}
+.tarjeta .cant button{width:34px;height:34px}
 .prog{height:6px;border-radius:3px;background:#3a3127;margin-top:6px;overflow:hidden}
 .prog i{display:block;height:100%;background:var(--oro-2);width:0;transition:width .25s}
 </style>
@@ -165,7 +176,8 @@ const euros = x => x.toLocaleString("es-ES", {minimumFractionDigits: 2, maximumF
 const DIAS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const DIAS_LARGO = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
-const GRUPOS = {pizza: "Pizzas", extra: "Extras", racion: "Para acompañar", bebida: "Bebidas"};
+const GRUPOS = {pizza: "Pizzas", extra: "Extras", hamburguesa: "Hamburguesas", racion: "Raciones para compartir", bebida: "Bebidas"};
+const CARRUSEL = ["hamburguesa", "racion", "bebida"];
 
 let disp = null, carta = [], dia = null, entrega = "domicilio";
 const cant = {};
@@ -185,8 +197,8 @@ function etiquetaDia(iso) {
   const diff = Math.round((f - hoy) / 86400000);
   return {corto: diff === 0 ? "Hoy" : diff === 1 ? "Mañana" : DIAS[f.getDay()], fecha: `${f.getDate()} ${MESES[f.getMonth()]}`};
 }
-const bonito = n => n.replace(/^PIZZA /, "").replace(/ LATA$/, "").replace(/ 9UND$/, "").toLowerCase().replace(/^./, c => c.toUpperCase())
-  .replace("Cocacola zero", "Coca-Cola Zero").replace("Cocacola", "Coca-Cola").replace("Jamon", "Jamón").replace("Limon", "Limón").replace("4 quesos", "Cuatro quesos");
+const bonito = n => n.replace(/^PIZZA /, "").replace(/^HAMBURGUESA (DE )?/, "").replace(/^RACI[OÓ]N (DE )?/, "").replace(/ [69]U(ND)?$/, "").replace(/ LATA$/, "").replace(/ 9UND$/, "").toLowerCase().replace(/^./, c => c.toUpperCase())
+  .replace("Cocacola zero", "Coca-Cola Zero").replace("Cocacola", "Coca-Cola").replace("Jamon", "Jamón").replace("Limon", "Limón").replace("limon", "limón").replace("4 quesos", "Cuatro quesos").replace("Mozarella", "mozzarella").replace("Jamón", "jamón").replace(/^jamón/, "Jamón").replace(/^Taberna$/, "Hamburguesa Taberna").replace(/^Ternera$/, "De ternera").replace(/^Pollo$/, "De pollo").replace(/^Queso cabra$/, "Queso de cabra");
 
 function pintarDias() {
   const cont = $("#dias"); cont.innerHTML = "";
@@ -200,25 +212,34 @@ function pintarDias() {
   });
 }
 
+function controles(p, out) {
+  const box = document.createElement("div"); box.className = "cant";
+  box.innerHTML = `<button type="button" class="menos" aria-label="Quitar ${bonito(p.nombre)}">−</button><output>${cant[p.nombre]}</output><button type="button" class="mas" aria-label="Añadir ${bonito(p.nombre)}">+</button>`;
+  const o = box.querySelector("output");
+  box.querySelector(".menos").onclick = () => { cant[p.nombre] = Math.max(0, cant[p.nombre] - 1); o.textContent = cant[p.nombre]; marcar(p); actualizar(); };
+  box.querySelector(".mas").onclick = () => { cant[p.nombre] = Math.min(20, cant[p.nombre] + 1); o.textContent = cant[p.nombre]; marcar(p); actualizar(); };
+  return box;
+}
+function marcar(p) { const c = document.querySelector(`[data-prod="${CSS.escape(p.nombre)}"]`); if (c) c.classList.toggle("on", cant[p.nombre] > 0); }
 function pintarCarta() {
-  const cont = $("#carta"); cont.innerHTML = ""; let grupo = null;
+  const cont = $("#carta"); cont.innerHTML = ""; let grupo = null, fila = null;
   carta.forEach(p => {
-    if (p.grupo !== grupo) { grupo = p.grupo; const h = document.createElement("div"); h.className = "grupo"; h.textContent = GRUPOS[grupo] || ""; cont.appendChild(h); }
     cant[p.nombre] = cant[p.nombre] || 0;
-    const fila = document.createElement("div"); fila.className = "prod";
-    const icono = {pizza: "🍕", extra: "🧀", racion: "🍟", bebida: "🥤"}[p.grupo] || "🍕";
-    fila.innerHTML = `
-      ${p.imagen ? `<img class="foto" src="${p.imagen}" alt="" loading="lazy">` : `<div class="foto">${icono}</div>`}
-      <div class="info"><b>${bonito(p.nombre)}</b>${p.descripcion ? `<em>${p.descripcion}</em>` : ""}<span class="pr">${euros(Number(p.precio))}</span></div>
-      <div class="cant">
-        <button type="button" class="menos" aria-label="Quitar ${bonito(p.nombre)}">−</button>
-        <output>${cant[p.nombre]}</output>
-        <button type="button" class="mas" aria-label="Añadir ${bonito(p.nombre)}">+</button>
-      </div>`;
-    const out = fila.querySelector("output");
-    fila.querySelector(".menos").onclick = () => { cant[p.nombre] = Math.max(0, cant[p.nombre] - 1); out.textContent = cant[p.nombre]; actualizar(); };
-    fila.querySelector(".mas").onclick = () => { cant[p.nombre] = Math.min(20, cant[p.nombre] + 1); out.textContent = cant[p.nombre]; actualizar(); };
-    cont.appendChild(fila);
+    const icono = {pizza: "🍕", extra: "🧀", hamburguesa: "🍔", racion: "🍟", bebida: "🥤"}[p.grupo] || "🍕";
+    if (p.grupo !== grupo) {
+      grupo = p.grupo; const h = document.createElement("div"); h.className = "grupo"; h.textContent = GRUPOS[grupo] || ""; cont.appendChild(h);
+      if (CARRUSEL.includes(grupo)) { fila = document.createElement("div"); fila.className = "carrusel"; cont.appendChild(fila); h.innerHTML += ' <small>desliza →</small>'; } else fila = null;
+    }
+    if (fila) {
+      const card = document.createElement("div"); card.className = "tarjeta"; card.dataset.prod = p.nombre;
+      card.innerHTML = `${p.imagen ? `<img src="${p.imagen}" alt="" loading="lazy">` : `<div class="ph">${icono}</div>`}<b>${bonito(p.nombre)}</b>${p.descripcion ? `<em>${p.descripcion}</em>` : ""}<span class="pr">${euros(Number(p.precio))}</span>`;
+      const img = card.querySelector("img"); if (img) img.onerror = () => img.replaceWith(Object.assign(document.createElement("div"), {className: "ph", textContent: icono}));
+      card.appendChild(controles(p)); fila.appendChild(card); marcar(p); return;
+    }
+    const row = document.createElement("div"); row.className = "prod";
+    row.innerHTML = `${p.imagen ? `<img class="foto" src="${p.imagen}" alt="" loading="lazy">` : `<div class="foto">${icono}</div>`}
+      <div class="info"><b>${bonito(p.nombre)}</b>${p.descripcion ? `<em>${p.descripcion}</em>` : ""}<span class="pr">${euros(Number(p.precio))}</span></div>`;
+    row.appendChild(controles(p)); cont.appendChild(row);
   });
 }
 
