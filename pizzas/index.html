@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pide tus pizzas · Taberna La Plaza</title>
+<meta name="description" content="Pizzas caseras de la Taberna La Plaza, Driebes. Viernes y sábados por la noche, a domicilio o para recoger.">
+<meta name="theme-color" content="#14110d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --negro:#14110d; --negro-2:#221d16; --oro:#d6a640; --oro-2:#f0c867; --crema:#faf6ee; --tinta:#1d1a16;
+  --gris:#7b7266; --linea:#e7dfd0; --rojo:#c0392b; --verde:#2e7d32;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --texto:Inter,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--texto);background:var(--crema);color:var(--tinta);line-height:1.45;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,textarea{font:inherit}
+.hero{background:var(--negro);color:var(--crema);padding:28px 20px 34px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:auto -20% -60% -20%;height:120%;background:radial-gradient(closest-side,rgba(214,166,64,.28),transparent);pointer-events:none}
+.marca{font-family:var(--display);letter-spacing:.18em;font-size:.78rem;color:var(--oro);text-transform:uppercase}
+.hero h1{font-family:var(--display);font-weight:800;font-size:clamp(2rem,8vw,2.8rem);line-height:1.05;margin:10px 0 8px}
+.hero h1 span{color:var(--oro-2)}
+.hero p{color:#d9cfbd;font-size:.98rem}
+main{max-width:560px;margin:-18px auto 0;padding:0 14px 140px;position:relative;z-index:1}
+.paso{background:#fff;border:1px solid var(--linea);border-radius:20px;padding:18px 16px;margin-bottom:14px;box-shadow:0 6px 18px rgba(20,17,13,.05)}
+.paso h2{font-family:var(--display);font-size:1.15rem;display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.num{width:28px;height:28px;border-radius:50%;background:var(--negro);color:var(--oro-2);display:inline-grid;place-items:center;font-size:.85rem;font-weight:700;flex:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--linea);border-radius:14px;padding:9px 12px;background:var(--crema);text-align:center;min-width:76px;transition:.15s}
+.chip b{display:block;font-size:.98rem}
+.chip small{display:block;font-size:.72rem;color:var(--gris)}
+.chip[aria-pressed="true"]{background:var(--negro);border-color:var(--negro);color:#fff}
+.chip[aria-pressed="true"] small{color:var(--oro-2)}
+.chip:disabled{opacity:.4;cursor:not-allowed;text-decoration:line-through}
+.prod{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--linea)}
+.prod:first-of-type{border-top:0}
+.foto{width:64px;height:64px;border-radius:14px;object-fit:cover;background:#efe6d4;flex:none;display:grid;place-items:center;font-size:1.8rem}
+.prod .info{flex:1;min-width:0}
+.prod .info b{display:block;font-size:.98rem}
+.prod .info span{color:var(--gris);font-size:.88rem}
+.cant{display:flex;align-items:center;gap:6px}
+.cant button{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--linea);font-size:1.3rem;line-height:1;background:#fff}
+.cant button.mas{background:var(--negro);border-color:var(--negro);color:var(--oro-2)}
+.cant output{min-width:22px;text-align:center;font-weight:700;font-size:1.1rem}
+label{display:block;font-weight:600;font-size:.9rem;margin:10px 0 6px}
+input,textarea{width:100%;border:1.5px solid var(--linea);border-radius:12px;padding:12px;background:var(--crema);font-size:1rem}
+input:focus,textarea:focus{outline:2px solid var(--oro);border-color:var(--oro)}
+textarea{min-height:64px;resize:vertical}
+.nota{font-size:.82rem;color:var(--gris);margin-top:6px}
+.barra{position:fixed;left:0;right:0;bottom:0;background:var(--negro);color:#fff;padding:12px 14px calc(12px + env(safe-area-inset-bottom));z-index:5;box-shadow:0 -8px 24px rgba(0,0,0,.2)}
+.barra .in{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.barra .tot{flex:1}
+.barra .tot b{font-size:1.25rem;color:var(--oro-2)}
+.barra .tot small{display:block;color:#cbbfa9;font-size:.8rem}
+.btn{background:var(--oro);color:var(--negro);font-weight:800;border-radius:14px;padding:14px 18px;font-size:1rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.aviso{border-radius:14px;padding:12px 14px;margin-bottom:14px;font-weight:600}
+.aviso.error{background:#fdecea;color:var(--rojo)}
+.aviso.info{background:#fff4dc;color:#7a5200}
+.ok{text-align:center;padding:28px 18px}
+.ok .gordo{font-size:3.2rem}
+.ok h2{font-family:var(--display);font-size:1.6rem;margin:8px 0}
+.resumen{text-align:left;background:var(--crema);border-radius:14px;padding:12px 14px;margin:14px 0;font-size:.95rem}
+.resumen div{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+.pie{text-align:center;color:var(--gris);font-size:.85rem;padding:8px 0 20px}
+.pie a{color:inherit}
+.cargando{text-align:center;color:var(--gris);padding:30px}
+[hidden]{display:none!important}
+.grupo{font-family:var(--display);font-size:.95rem;color:var(--gris);margin:16px 0 4px}
+.grupo:first-child{margin-top:0}
+.prod .info em{display:block;font-style:normal;color:var(--gris);font-size:.8rem;line-height:1.3;margin-top:2px}
+.prod .info span.pr{color:var(--tinta);font-weight:600;font-size:.9rem}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.op{border:1.5px solid var(--linea);border-radius:14px;padding:12px;background:var(--crema);text-align:left}
+.op b{display:block}
+.op small{color:var(--gris);font-size:.8rem}
+.op[aria-pressed="true"]{background:var(--negro);border-color:var(--negro);color:#fff}
+.op[aria-pressed="true"] small{color:var(--oro-2)}
+select{width:100%;border:1.5px solid var(--linea);border-radius:12px;padding:12px;background:var(--crema);font:inherit;font-size:1rem;color:var(--tinta)}
+.zinfo{margin-top:8px;font-size:.88rem;background:#fff4dc;color:#7a5200;border-radius:12px;padding:10px 12px}
+.prog{height:6px;border-radius:3px;background:#3a3127;margin-top:6px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--oro-2);width:0;transition:width .25s}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="marca">Taberna La Plaza · Driebes</div>
+  <h1>Pide tus <span>pizzas caseras</span></h1>
+  <p>Viernes y sábados por la noche, a partir de las <b class="hini">20:30</b>.<br>Pídelas antes de las <b class="limite">19:00</b> del mismo día. Lo pagas al recibirlo.</p>
+</header>
+
+<main>
+  <div id="cargando" class="paso cargando">Cargando…</div>
+  <div id="cerrado" class="paso" hidden><p class="aviso info">Ahora mismo no aceptamos pedidos por la web. Escríbenos por WhatsApp.</p></div>
+
+  <form id="form" hidden novalidate>
+    <section class="paso">
+      <h2><span class="num">1</span>¿Qué día?</h2>
+      <div class="chips" id="dias"></div>
+    </section>
+
+    <section class="paso">
+      <h2><span class="num">2</span>¿Te la llevamos?</h2>
+      <div class="dos">
+        <button type="button" class="op" id="op-dom" aria-pressed="true"><b>A domicilio</b><small>Te la llevamos a casa</small></button>
+        <button type="button" class="op" id="op-rec" aria-pressed="false"><b>La recojo</b><small>En el bar, sin envío</small></button>
+      </div>
+      <div id="bloque-dom">
+        <label for="pueblo">Pueblo</label>
+        <select id="pueblo"><option value="">Elige tu pueblo</option></select>
+        <div class="zinfo" id="zinfo" hidden></div>
+        <label for="direccion">Dirección</label>
+        <input id="direccion" autocomplete="street-address" maxlength="120" placeholder="Calle, número, piso…">
+      </div>
+      <p class="nota" id="nota-entrega"></p>
+    </section>
+
+    <section class="paso">
+      <h2><span class="num">3</span>¿Qué te pongo?</h2>
+      <div id="carta"></div>
+    </section>
+
+    <section class="paso">
+      <h2><span class="num">4</span>Tus datos</h2>
+      <label for="nombre">Nombre</label>
+      <input id="nombre" autocomplete="name" maxlength="40" placeholder="Ej.: Juan">
+      <label for="telefono">Teléfono</label>
+      <input id="telefono" type="tel" autocomplete="tel" inputmode="tel" maxlength="16" placeholder="Ej.: 612 345 678">
+      <p class="nota">Te escribimos por WhatsApp con la hora de entrega.</p>
+      <label for="notas">¿Algo más? <span style="font-weight:400;color:var(--gris)">(opcional)</span></label>
+      <textarea id="notas" maxlength="200" placeholder="Sin cebolla, el queso de cabra en la barbacoa, llamar al timbre…"></textarea>
+    </section>
+
+    <div id="error" class="aviso error" role="alert" hidden></div>
+  </form>
+
+  <section id="hecho" class="paso ok" hidden>
+    <div class="gordo">🍕</div>
+    <h2>¡Pedido hecho!</h2>
+    <p id="hecho-txt"></p>
+    <div class="resumen" id="hecho-resumen"></div>
+    <p class="nota">Si necesitas cambiar algo, escríbenos por WhatsApp al <b>619 350 793</b>.</p>
+    <p style="margin-top:16px"><button class="btn" type="button" id="otro">Hacer otro pedido</button></p>
+  </section>
+
+  <p class="pie">Taberna La Plaza · Plaza Mayor 1, Driebes · <a href="https://wa.me/34619350793">WhatsApp 619 350 793</a> · <a href="../">Encargar pollos</a></p>
+</main>
+
+<div class="barra" id="barra" hidden>
+  <div class="in">
+    <div class="tot"><b id="total">0,00 €</b><small id="resumen-barra">Elige tus pizzas</small><div class="prog" id="prog" hidden><i id="prog-i"></i></div></div>
+    <button class="btn" id="enviar" type="button" disabled>Pedir</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://hprakglscrfbiafvgxuc.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Ud8NYh7WpLfNTeZ9z9VS6w_bpKUV9Kq";
+const $ = s => document.querySelector(s);
+const euros = x => x.toLocaleString("es-ES", {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " €";
+const DIAS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+const DIAS_LARGO = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+const GRUPOS = {pizza: "Pizzas", extra: "Extras", racion: "Para acompañar", bebida: "Bebidas"};
+
+let disp = null, carta = [], dia = null, entrega = "domicilio";
+const cant = {};
+
+async function rpc(nombre, cuerpo) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${nombre}`, {
+    method: "POST",
+    headers: {"apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json"},
+    body: JSON.stringify(cuerpo || {})
+  });
+  if (!r.ok) throw new Error("Error " + r.status);
+  return r.json();
+}
+function fechaLocal(iso) { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d); }
+function etiquetaDia(iso) {
+  const f = fechaLocal(iso), hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const diff = Math.round((f - hoy) / 86400000);
+  return {corto: diff === 0 ? "Hoy" : diff === 1 ? "Mañana" : DIAS[f.getDay()], fecha: `${f.getDate()} ${MESES[f.getMonth()]}`};
+}
+const bonito = n => n.replace(/^PIZZA /, "").replace(/ LATA$/, "").replace(/ 9UND$/, "").toLowerCase().replace(/^./, c => c.toUpperCase())
+  .replace("Cocacola zero", "Coca-Cola Zero").replace("Cocacola", "Coca-Cola").replace("Jamon", "Jamón").replace("Limon", "Limón").replace("4 quesos", "Cuatro quesos");
+
+function pintarDias() {
+  const cont = $("#dias"); cont.innerHTML = "";
+  disp.dias.forEach(d => {
+    const e = etiquetaDia(d.fecha);
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.setAttribute("aria-pressed", d.fecha === dia); b.disabled = d.cerrado;
+    b.innerHTML = `<b>${e.corto} ${e.fecha}</b><small>${d.cerrado ? "Cerrado" : "Desde las " + disp.hora_inicio}</small>`;
+    b.onclick = () => { dia = d.fecha; pintarDias(); actualizar(); };
+    cont.appendChild(b);
+  });
+}
+
+function pintarCarta() {
+  const cont = $("#carta"); cont.innerHTML = ""; let grupo = null;
+  carta.forEach(p => {
+    if (p.grupo !== grupo) { grupo = p.grupo; const h = document.createElement("div"); h.className = "grupo"; h.textContent = GRUPOS[grupo] || ""; cont.appendChild(h); }
+    cant[p.nombre] = cant[p.nombre] || 0;
+    const fila = document.createElement("div"); fila.className = "prod";
+    const icono = {pizza: "🍕", extra: "🧀", racion: "🍟", bebida: "🥤"}[p.grupo] || "🍕";
+    fila.innerHTML = `
+      ${p.imagen ? `<img class="foto" src="${p.imagen}" alt="" loading="lazy">` : `<div class="foto">${icono}</div>`}
+      <div class="info"><b>${bonito(p.nombre)}</b>${p.descripcion ? `<em>${p.descripcion}</em>` : ""}<span class="pr">${euros(Number(p.precio))}</span></div>
+      <div class="cant">
+        <button type="button" class="menos" aria-label="Quitar ${bonito(p.nombre)}">−</button>
+        <output>${cant[p.nombre]}</output>
+        <button type="button" class="mas" aria-label="Añadir ${bonito(p.nombre)}">+</button>
+      </div>`;
+    const out = fila.querySelector("output");
+    fila.querySelector(".menos").onclick = () => { cant[p.nombre] = Math.max(0, cant[p.nombre] - 1); out.textContent = cant[p.nombre]; actualizar(); };
+    fila.querySelector(".mas").onclick = () => { cant[p.nombre] = Math.min(20, cant[p.nombre] + 1); out.textContent = cant[p.nombre]; actualizar(); };
+    cont.appendChild(fila);
+  });
+}
+
+function pintarPueblos() {
+  const sel = $("#pueblo");
+  disp.zonas.forEach(z => { const o = document.createElement("option"); o.value = z.pueblo; o.textContent = z.pueblo; sel.appendChild(o); });
+  const o = document.createElement("option"); o.value = "__otro"; o.textContent = "Otro pueblo"; sel.appendChild(o);
+  sel.onchange = actualizar;
+}
+
+function zonaSel() { return disp.zonas.find(z => z.pueblo === $("#pueblo").value) || null; }
+
+function calcular() {
+  let sub = 0, pizzas = 0;
+  carta.forEach(p => { const n = cant[p.nombre] || 0; sub += Number(p.precio) * n; if (p.grupo === "pizza") pizzas += n; });
+  let envio = 0, z = null;
+  if (entrega === "domicilio") { z = zonaSel(); if (z) envio = (z.gratis_desde != null && sub >= Number(z.gratis_desde)) ? 0 : Number(z.envio); }
+  return {sub, pizzas, envio, total: sub + envio, z};
+}
+
+function actualizar() {
+  const {sub, pizzas, envio, total, z} = calcular();
+  const otro = entrega === "domicilio" && $("#pueblo").value === "__otro";
+  $("#bloque-dom").hidden = entrega !== "domicilio";
+  $("#op-dom").setAttribute("aria-pressed", entrega === "domicilio"); $("#op-rec").setAttribute("aria-pressed", entrega === "recoger");
+  $("#nota-entrega").textContent = entrega === "recoger" ? `Recógelo en el bar a partir de las ${disp.hora_inicio}. Te avisamos cuando esté listo.` : "";
+  const zi = $("#zinfo");
+  if (entrega === "domicilio" && z) {
+    zi.hidden = false;
+    zi.innerHTML = Number(z.envio) === 0 ? `Zona ${z.zona}: <b>envío gratis</b>. Pedido mínimo ${euros(Number(z.minimo))}.`
+      : `Zona ${z.zona}: envío <b>${euros(Number(z.envio))}</b>, gratis desde ${euros(Number(z.gratis_desde))}. Pedido mínimo ${euros(Number(z.minimo))}.`;
+  } else if (otro) { zi.hidden = false; zi.innerHTML = `A ese pueblo no llegamos por la web. <a href="https://wa.me/34619350793">Escríbenos por WhatsApp</a> y lo vemos.`; }
+  else zi.hidden = true;
+
+  $("#total").textContent = euros(total);
+  const faltan = []; let msg = "", prog = null;
+  if (!dia) faltan.push("día");
+  if (pizzas === 0) faltan.push("pizza");
+  if (entrega === "domicilio") { if (!z) faltan.push("pueblo"); if ($("#direccion").value.trim().length < 4) faltan.push("dirección"); }
+  if (faltan.length) msg = "Falta: " + faltan.join(", ");
+  else if (z && sub < Number(z.minimo)) { msg = `Te faltan ${euros(Number(z.minimo) - sub)} para el pedido mínimo`; prog = sub / Number(z.minimo); }
+  else if (z && envio > 0 && z.gratis_desde != null) { msg = `Envío ${euros(envio)} · añade ${euros(Number(z.gratis_desde) - sub)} y es gratis`; prog = sub / Number(z.gratis_desde); }
+  else msg = `${pizzas} pizza${pizzas === 1 ? "" : "s"}${entrega === "domicilio" ? (envio ? " · envío " + euros(envio) : " · envío gratis") : " · para recoger"}`;
+  $("#resumen-barra").textContent = msg;
+  $("#prog").hidden = prog === null; if (prog !== null) $("#prog-i").style.width = Math.min(100, prog * 100) + "%";
+  $("#enviar").disabled = faltan.length > 0 || otro || (z && sub < Number(z.minimo));
+}
+
+function mostrarError(t) { const e = $("#error"); e.textContent = t; e.hidden = false; e.scrollIntoView({behavior: "smooth", block: "center"}); }
+
+async function enviar() {
+  $("#error").hidden = true;
+  const nombre = $("#nombre").value.trim(), telefono = $("#telefono").value.trim();
+  if (nombre.length < 2) { $("#nombre").focus(); return mostrarError("Escribe tu nombre."); }
+  if (telefono.replace(/\D/g, "").length < 9) { $("#telefono").focus(); return mostrarError("Escribe un teléfono válido."); }
+  const items = carta.filter(p => cant[p.nombre] > 0).map(p => ({nombre: p.nombre, cantidad: cant[p.nombre]}));
+  const btn = $("#enviar"); btn.disabled = true; btn.textContent = "Enviando…";
+  try {
+    const r = await rpc("web_crear_pedido_pizza", {p_nombre: nombre, p_telefono: telefono, p_fecha: dia, p_entrega: entrega,
+      p_pueblo: entrega === "domicilio" ? $("#pueblo").value : null, p_direccion: entrega === "domicilio" ? $("#direccion").value : null,
+      p_items: items, p_notas: $("#notas").value});
+    if (!r.ok) { mostrarError(r.error || "No se pudo hacer el pedido."); return; }
+    const f = fechaLocal(dia);
+    const cuando = `el <b>${DIAS_LARGO[f.getDay()]} ${f.getDate()} de ${MESES[f.getMonth()]}</b>`;
+    $("#hecho-txt").innerHTML = entrega === "domicilio"
+      ? `Te lo llevamos ${cuando} a <b>${$("#pueblo").value}</b>. Te escribimos por WhatsApp con la hora de entrega.`
+      : `Te esperamos ${cuando} en el bar, a partir de las <b>${disp.hora_inicio}</b>.`;
+    $("#hecho-resumen").innerHTML = items.map(i => `<div><span>${i.cantidad}× ${bonito(i.nombre)}</span></div>`).join("") +
+      (entrega === "domicilio" ? `<div><span>Envío</span><span>${Number(r.envio) ? euros(Number(r.envio)) : "Gratis"}</span></div>` : "") +
+      `<div style="border-top:1px solid var(--linea);margin-top:6px;padding-top:8px"><b>Total a pagar</b><b>${euros(Number(r.total))}</b></div>`;
+    $("#form").hidden = true; $("#barra").hidden = true; $("#hecho").hidden = false;
+    window.scrollTo({top: 0, behavior: "smooth"});
+    try { localStorage.setItem("taberna_cliente", JSON.stringify({nombre, telefono, pueblo: $("#pueblo").value, direccion: $("#direccion").value})); } catch (_) {}
+  } catch (e) {
+    mostrarError("No hay conexión. Inténtalo de nuevo o escríbenos por WhatsApp al 619 350 793.");
+  } finally { btn.textContent = "Pedir"; actualizar(); }
+}
+
+async function cargar() {
+  try {
+    const [d, c] = await Promise.all([rpc("web_disponibilidad_pizzas"), rpc("web_carta_pizzas")]);
+    disp = d; carta = c;
+    $("#cargando").hidden = true;
+    if (!disp.activa || !disp.dias || disp.dias.length === 0) { $("#cerrado").hidden = false; return; }
+    if (!disp.domicilio) { entrega = "recoger"; $("#op-dom").disabled = true; }
+    const libre = disp.dias.find(x => !x.cerrado); if (libre) dia = libre.fecha;
+    document.querySelectorAll(".limite").forEach(e => e.textContent = disp.hora_limite);
+    document.querySelectorAll(".hini").forEach(e => e.textContent = disp.hora_inicio);
+    pintarDias(); pintarCarta(); pintarPueblos();
+    try { const g = JSON.parse(localStorage.getItem("taberna_cliente") || "null"); if (g) { $("#nombre").value = g.nombre || ""; $("#telefono").value = g.telefono || ""; if (g.pueblo) $("#pueblo").value = g.pueblo; if (g.direccion) $("#direccion").value = g.direccion; } } catch (_) {}
+    const q = new URLSearchParams(location.search).get("pueblo"); if (q && disp.zonas.some(z => z.pueblo === q)) $("#pueblo").value = q;
+    actualizar();
+    $("#form").hidden = false; $("#barra").hidden = false;
+  } catch (e) {
+    $("#cargando").textContent = "No se ha podido cargar. Revisa la conexión o escríbenos por WhatsApp al 619 350 793.";
+  }
+}
+
+$("#op-dom").onclick = () => { entrega = "domicilio"; actualizar(); };
+$("#op-rec").onclick = () => { entrega = "recoger"; actualizar(); };
+$("#direccion").oninput = actualizar;
+$("#enviar").onclick = enviar;
+$("#otro").onclick = () => { Object.keys(cant).forEach(k => cant[k] = 0); $("#hecho").hidden = true; pintarCarta(); $("#form").hidden = false; $("#barra").hidden = false; actualizar(); };
+cargar();
+</script>
+</body>
+</html>
