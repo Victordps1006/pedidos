@@ -70,6 +70,8 @@ textarea{min-height:64px;resize:vertical}
 .pie a{color:inherit}
 .cargando{text-align:center;color:var(--gris);padding:30px}
 [hidden]{display:none!important}
+.grupo-bebidas{font-family:var(--display);font-size:.95rem;color:var(--gris);margin:18px 0 4px;padding-top:12px;border-top:1px solid var(--linea)}
+.grupo-bebidas small{font-family:var(--texto);font-weight:600;color:var(--oro);margin-left:6px}
 </style>
 </head>
 <body>
@@ -188,13 +190,17 @@ function pintarDias() {
 
 function pintarCarta() {
   const cont = $("#carta"); cont.innerHTML = "";
+  let bebidas = false;
   carta.forEach(p => {
     cant[p.nombre] = cant[p.nombre] || 0;
+    const esBebida = Number(p.pollos) === 0;
+    if (esBebida && !bebidas) { bebidas = true; const h = document.createElement("div"); h.className = "grupo-bebidas"; h.innerHTML = "Añade tus bebidas <small>latas a 1,70 €</small>"; cont.appendChild(h); }
     const fila = document.createElement("div"); fila.className = "prod";
     const tieneFoto = p.imagen && p.imagen.startsWith("http");
-    const nombreBonito = p.nombre.toLowerCase().replace(/\+/g, " + ").replace(/^./, c => c.toUpperCase());
+    const nombreBonito = p.nombre.toLowerCase().replace(/\+/g, " + ").replace(/ lata$/, "").replace(/^./, c => c.toUpperCase())
+      .replace("Cocacola zero", "Coca-Cola Zero").replace("Cocacola", "Coca-Cola").replace("limon", "limón").replace(/^Cerveza$/, "Cerveza (lata)");
     fila.innerHTML = `
-      ${tieneFoto ? `<img class="foto" src="${p.imagen}" alt="" loading="lazy">` : `<div class="foto">🍗</div>`}
+      ${tieneFoto ? `<img class="foto" src="${p.imagen}" alt="" loading="lazy">` : `<div class="foto">${esBebida ? "🥤" : "🍗"}</div>`}
       <div class="info"><b>${nombreBonito}</b><span>${euros(Number(p.precio))}</span></div>
       <div class="cant">
         <button type="button" class="menos" aria-label="Quitar ${nombreBonito}">−</button>
@@ -204,7 +210,7 @@ function pintarCarta() {
     const out = fila.querySelector("output");
     fila.querySelector(".menos").onclick = () => { cant[p.nombre] = Math.max(0, cant[p.nombre] - 1); out.textContent = cant[p.nombre]; actualizar(); };
     fila.querySelector(".mas").onclick = () => { cant[p.nombre] = Math.min(10, cant[p.nombre] + 1); out.textContent = cant[p.nombre]; actualizar(); };
-    const img = fila.querySelector("img"); if (img) img.onerror = () => { img.replaceWith(Object.assign(document.createElement("div"), {className: "foto", textContent: "🍗"})); };
+    const img = fila.querySelector("img"); if (img) img.onerror = () => { img.replaceWith(Object.assign(document.createElement("div"), {className: "foto", textContent: esBebida ? "🥤" : "🍗"})); };
     cont.appendChild(fila);
   });
 }
