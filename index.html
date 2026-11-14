@@ -71,6 +71,15 @@ textarea{min-height:64px;resize:vertical}
 .cargando{text-align:center;color:var(--gris);padding:30px}
 [hidden]{display:none!important}
 .grupo-bebidas{font-family:var(--display);font-size:.95rem;color:var(--gris);margin:18px 0 4px;padding-top:12px;border-top:1px solid var(--linea)}
+.carrusel{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:4px 16px 10px;scroll-padding-inline:16px;scrollbar-width:none}
+.carrusel::-webkit-scrollbar{display:none}
+.tarjeta{flex:0 0 40%;max-width:160px;scroll-snap-align:start;background:var(--crema);border:1.5px solid var(--linea);border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:3px}
+.tarjeta.on{border-color:var(--oro);background:#fff8e6}
+.tarjeta img,.tarjeta .ph{width:100%;aspect-ratio:1;object-fit:cover;border-radius:11px;background:#efe6d4;display:grid;place-items:center;font-size:2rem;margin-bottom:4px}
+.tarjeta b{font-size:.9rem;line-height:1.2}
+.tarjeta .pr{font-weight:600;font-size:.85rem}
+.tarjeta .cant{justify-content:space-between;margin-top:6px}
+.tarjeta .cant button{width:32px;height:32px}
 .grupo-bebidas small{font-family:var(--texto);font-weight:600;color:var(--oro);margin-left:6px}
 </style>
 </head>
@@ -188,30 +197,47 @@ function pintarDias() {
     : `Recogida de ${disp.hora_inicio} a ${disp.hora_fin} en el bar.`;
 }
 
+function grupoDe(p) { const n = p.nombre.toUpperCase(); return Number(p.pollos) > 0 ? "pollo" : / LATA$/.test(n) ? "bebida" : "pan"; }
+function bonitoPollo(n) {
+  return n.toLowerCase().replace(/\+/g, " + ").replace(/ lata$/, "").replace(/^./, c => c.toUpperCase())
+    .replace("Cocacola zero", "Coca-Cola Zero").replace("Cocacola", "Coca-Cola").replace("limon", "limón").replace(/^Cerveza$/, "Cerveza")
+    .replace(/^Barra normal$/, "Barra de pan").replace(/^Barra castilla$/, "Barra de Castilla").replace(/^Pan cereales$/, "Pan de cereales");
+}
 function pintarCarta() {
   const cont = $("#carta"); cont.innerHTML = "";
-  let bebidas = false;
+  const TIT = {bebida: 'Añade tus bebidas <small>latas a 1,70 € · desliza →</small>', pan: '¿Quieres pan? <small>desliza →</small>'};
+  const ICO = {pollo: "🍗", bebida: "🥤", pan: "🥖"};
+  let grupo = null, fila = null;
   carta.forEach(p => {
     cant[p.nombre] = cant[p.nombre] || 0;
-    const esBebida = Number(p.pollos) === 0;
-    if (esBebida && !bebidas) { bebidas = true; const h = document.createElement("div"); h.className = "grupo-bebidas"; h.innerHTML = "Añade tus bebidas <small>latas a 1,70 €</small>"; cont.appendChild(h); }
-    const fila = document.createElement("div"); fila.className = "prod";
+    const g = grupoDe(p), icono = ICO[g];
     const tieneFoto = p.imagen && p.imagen.startsWith("http");
-    const nombreBonito = p.nombre.toLowerCase().replace(/\+/g, " + ").replace(/ lata$/, "").replace(/^./, c => c.toUpperCase())
-      .replace("Cocacola zero", "Coca-Cola Zero").replace("Cocacola", "Coca-Cola").replace("limon", "limón").replace(/^Cerveza$/, "Cerveza (lata)");
-    fila.innerHTML = `
-      ${tieneFoto ? `<img class="foto" src="${p.imagen}" alt="" loading="lazy">` : `<div class="foto">${esBebida ? "🥤" : "🍗"}</div>`}
-      <div class="info"><b>${nombreBonito}</b><span>${euros(Number(p.precio))}</span></div>
-      <div class="cant">
+    const nombreBonito = bonitoPollo(p.nombre);
+    if (g !== grupo) {
+      grupo = g;
+      if (g !== "pollo") { const h = document.createElement("div"); h.className = "grupo-bebidas"; h.innerHTML = TIT[g]; cont.appendChild(h); fila = document.createElement("div"); fila.className = "carrusel"; cont.appendChild(fila); }
+      else fila = null;
+    }
+    const controles = `<div class="cant">
         <button type="button" class="menos" aria-label="Quitar ${nombreBonito}">−</button>
         <output>${cant[p.nombre]}</output>
         <button type="button" class="mas" aria-label="Añadir ${nombreBonito}">+</button>
       </div>`;
-    const out = fila.querySelector("output");
-    fila.querySelector(".menos").onclick = () => { cant[p.nombre] = Math.max(0, cant[p.nombre] - 1); out.textContent = cant[p.nombre]; actualizar(); };
-    fila.querySelector(".mas").onclick = () => { cant[p.nombre] = Math.min(10, cant[p.nombre] + 1); out.textContent = cant[p.nombre]; actualizar(); };
-    const img = fila.querySelector("img"); if (img) img.onerror = () => { img.replaceWith(Object.assign(document.createElement("div"), {className: "foto", textContent: esBebida ? "🥤" : "🍗"})); };
-    cont.appendChild(fila);
+    const el = document.createElement("div");
+    if (fila) {
+      el.className = "tarjeta" + (cant[p.nombre] ? " on" : "");
+      el.innerHTML = `${tieneFoto ? `<img src="${p.imagen}" alt="" loading="lazy">` : `<div class="ph">${icono}</div>`}<b>${nombreBonito}</b><span class="pr">${euros(Number(p.precio))}</span>${controles}`;
+    } else {
+      el.className = "prod";
+      el.innerHTML = `${tieneFoto ? `<img class="foto" src="${p.imagen}" alt="" loading="lazy">` : `<div class="foto">${icono}</div>`}
+      <div class="info"><b>${nombreBonito}</b><span>${euros(Number(p.precio))}</span></div>${controles}`;
+    }
+    const out = el.querySelector("output");
+    const set = v => { cant[p.nombre] = v; out.textContent = v; if (fila) el.classList.toggle("on", v > 0); actualizar(); };
+    el.querySelector(".menos").onclick = () => set(Math.max(0, cant[p.nombre] - 1));
+    el.querySelector(".mas").onclick = () => set(Math.min(10, cant[p.nombre] + 1));
+    const img = el.querySelector("img"); if (img) img.onerror = () => { img.replaceWith(Object.assign(document.createElement("div"), {className: fila ? "ph" : "foto", textContent: icono})); };
+    (fila || cont).appendChild(el);
   });
 }
 
